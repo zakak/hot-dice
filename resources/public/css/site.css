@@ -1,0 +1,40 @@
+html {
+  display: table;
+  margin: 1em auto;
+  overflow: auto;
+}
+
+.dice-container {
+  display: table-cell;
+  vertical-align: middle;
+  margin: auto;
+}
+
+.dice {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+}
+
+.dice img {
+  cursor: pointer;
+}
+
+.hold {
+  opacity: 0.5;
+}
+
+.footer {
+  margin: auto;
+  text-align: center;
+  margin-top: 2em;
+}
+
+.footer a:link, a:visited, a:hover, a:active{
+  color: #e0e0e0;
+  text-decoration: none;
+}
+
+.center {
+  margin: auto;
+}
