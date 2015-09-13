@@ -35,13 +35,13 @@
                                     [:cljsbuild :builds :app :compiler :output-dir]
                                     [:cljsbuild :builds :app :compiler :output-to]]
 
-  :source-paths ["src/clj" "src/cljc" "test/cljc"]
+  :source-paths ["src/clj" "src/cljc" "test/clj"]
 
   :minify-assets
   {:assets
     {"resources/public/css/site.min.css" "resources/public/css/site.css"}}
 
-  :cljsbuild {:builds {:app {:source-paths ["src/cljs" "src/cljc" "test/cljc"]
+  :cljsbuild {:builds {:app {:source-paths ["src/cljs" "src/cljc"]
                              :compiler {:output-to     "resources/public/js/app.js"
                                         :output-dir    "resources/public/js/out"
                                         :asset-path   "js/out"
@@ -75,7 +75,7 @@
                    :cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]
                                               :compiler {:main "hot-dice.dev"
                                                          :source-map true}}
-                                        :test {:source-paths ["src/cljs" "src/cljc" "test/cljs" "test/cljc"]
+                                        :test {:source-paths ["src/cljs" "src/cljc" "test/cljs"]
                                                :compiler {:output-to "target/test.js"
                                                           :optimizations :whitespace
                                                           :pretty-print true}}}

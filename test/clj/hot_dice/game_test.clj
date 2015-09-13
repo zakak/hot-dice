@@ -1,7 +1,6 @@
 (ns hot-dice.game-test
-  (:require [hot-dice.game :refer [straight of-a-kind] :as game]
-            #?(:clj [clojure.test :refer [deftest is]]
-               :cljs [cemerick.cljs.test :refer-macros [is are deftest testing use-fixtures done]])))
+  (:require [clojure.test :refer [deftest is]]   
+            [hot-dice.game :refer [straight of-a-kind] :as game]))
 
 (defn dice [& args]
   (map game/new-die args))
