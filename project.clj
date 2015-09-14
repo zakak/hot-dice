@@ -85,13 +85,21 @@
                                                        "test/vendor/console-polyfill.js"
                                                        "target/test.js"]}}}
 
+             :production {:hooks [leiningen.cljsbuild minify-assets.plugin/hooks]
+                          :env {:production true}
+                          :cljsbuild {:builds {:app
+                                               {:source-paths ["env/prod/cljs"]
+                                                :compiler
+                                                {:output-to     "resources/public/js/app.min.js"
+                                                 :optimizations :advanced
+                                                 :pretty-print false}}}}}
              :uberjar {:hooks [leiningen.cljsbuild minify-assets.plugin/hooks]
                        :env {:production true}
                        :aot :all
                        :omit-source true
                        :cljsbuild {:jar true
                                    :builds {:app
-                                             {:source-paths ["env/prod/cljs"]
-                                              :compiler
-                                              {:optimizations :advanced
-                                               :pretty-print false}}}}}})
+                                            {:source-paths ["env/prod/cljs"]
+                                             :compiler
+                                             {:optimizations :advanced
+                                              :pretty-print false}}}}}})
