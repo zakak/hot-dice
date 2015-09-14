@@ -21,7 +21,7 @@
      (include-css (if (env :dev) "css/site.css" "css/site.min.css"))]
     [:body
      [:div#app
-      [:p "Loading ..."]]
+      [:p "Loading (probably) ..."]]
      (include-js "js/app.js")]]))
 
 (defroutes routes
