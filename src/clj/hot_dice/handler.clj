@@ -12,11 +12,11 @@
   (html
    [:html
     [:head
-     [:title "hot dice"]
+     [:title "Hot Dice"]
      [:meta {:charset "utf-8"}]
      [:meta {:name "viewport"
              :content "width=device-width, initial-scale=1"}]
-     (include-css "//yui.yahooapis.com/pure/0.6.0/pure-min.css")
+     (include-css "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css")
      (include-css "https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css")
      (include-css (if (env :dev) "css/site.css" "css/site.min.css"))]
     [:body
