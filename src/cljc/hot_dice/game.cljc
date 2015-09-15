@@ -1,16 +1,12 @@
-(ns hot-dice.game)
+(ns hot-dice.game
+  (:require #?(:clj [clojure.core.match :refer [match]]
+               :cljs [cljs.core.match :refer-macros [match]])))
 
 (def config {:dice-count 5
              :default-die-num 6
              :straight-min 5
              :straight-score 1500
              :of-a-kind-min 3
-             :3-of-a-kind {1 1000
-                         2 200
-                         3 300
-                         4 400
-                         5 500
-                         6 600}
              :singles {1 100
                        5 50}})
 
@@ -23,7 +19,6 @@
       {:min 1
        :max 6
        :n n
-       :face n
        :hold false}
       opts)))
 
@@ -69,17 +64,36 @@
        :score (reduce + 0 (map :score nums))
        :dice nums})))
 
+(defn score-n-of-a-kind [n total]
+  (match [n total]
+         [1 3] 1000
+         [_ 3] (* 100 n)
+         [1 4] 2000
+         [_ 4] (* 100 2 n)
+         [1 5] 4000
+         [_ 5] (* 100 4 n)
+         :else nil))
+
 (defn- score-of-a-kind [dice]
   (when-let [coll (seq (of-a-kind dice))]
     (let [n (-> coll first :n)
           total (count coll)]
       [{:type :of-a-kind
-        :score (get (:3-of-a-kind config) n)
+        :score (score-n-of-a-kind n total)
         :dice coll}])))
 
 (defn- other-score [dice]
-  (set (filter seq (concat (score-singles dice)
-                           (score-of-a-kind dice)))))
+  (let [kind (score-of-a-kind dice)
+        sing (score-singles dice)]
+    (-> (cond
+          (and (seq kind)
+               (seq sing)) (concat kind
+                                   (remove #(== (-> % :dice first :n)
+                                                (-> kind first :dice first :n)) sing))
+          (seq kind) kind
+          (seq sing) sing
+          :else [])
+        (set))))
 
 (defn score [dice]
   (if-let [coll (seq (straight dice))]

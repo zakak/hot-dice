@@ -15,46 +15,49 @@
 ;; Data
 
 (defonce config {:spin-count 5
-                 :spin-timeout 100})
+                 :spin-timeout 150
+                 :type-format {:single ""
+                               :straight "Straight "
+                               :of-a-kind "Set of "}})
 
-(defonce state
-  (atom {:round 1
-         :mode :start}))
+(defonce state (atom {:scoring-enabled true
+                      :round 1
+                      :mode :start}))
+
+(defonce dice (atom (game/init-dice)))
 
 ;; -------------------------
 ;; Fn
 
-(defonce dice (atom (game/init-dice)))
-
 (defn toggle-hold-die! [k die]
   (swap! dice update-in [k :hold] not))
 
+(defn rand-timeout []
+  (let [t-min (+ (:spin-timeout config) 50)
+        t-max (- (:spin-timeout config) 50)]
+    (timeout (game/rand-between t-min t-max))))
+
 (defn roll-die! [k {:keys [min max] :as die}]
-  (swap! dice assoc-in [k :rolling] true)
-  (swap! dice assoc-in [k :n] (game/rand-between min max))
-  (go
-    (dotimes [n (:spin-count config)]
-      (swap! dice assoc-in [k :face] (game/rand-between min max))
-      (<! (timeout (:spin-timeout config))))
-    (swap! dice update-in [k] #(assoc % :face (:n %)))
-    (swap! dice assoc-in [k :rolling] false)))
+    (swap! dice assoc-in [k :rolling] true)
+    (go
+      (dotimes [n (:spin-count config)]
+        (swap! dice assoc-in [k :n] (game/rand-between min max))
+        (<! (rand-timeout)))
+      (swap! dice assoc-in [k :rolling] false)))
 
 (defn roll-all! []
   (doseq [[k die] (map-indexed vector @dice)]
     (when-not (:hold die)
-      (roll-die! k die)))
-  (when-let [s (seq (game/score @dice))]
-    (prn (sort (map :n @dice)))
-    (prn s)))
+      (roll-die! k die))))
 
 (defmulti score-line :type)
-(defmethod score-line :default [score]
+(defmethod score-line :default [{:keys [type dice score]}]
   (str 
-    (name (:type score))
+    (-> config :type-format type)
     " "
-    (apply str (interpose ", " (map :n (:dice score))))
+    (apply str (interpose ", " (map :n dice)))
     " = "
-    (:score score)))
+    score))
 
 ;; -------------------------
 ;; Views
@@ -65,7 +68,7 @@
      [:li {:key k
            :class (when (:hold die) "hold")}
       [:img {:class "pure-image"
-             :src (str "image/die" (:face die) ".svg")
+             :src (str "image/die" (:n die) ".svg")
              :on-click #(toggle-hold-die! k die)}]])])
 
 (defn home-page []
@@ -82,12 +85,13 @@
      [:button {:class "btn btn-primary fa fa-2x fa-random"
                :on-click #(roll-all!)}]]]
 
-   [:div {:class "row"}
-    [:div {:class "col-xs-12 text-center"}
-     (when (every? #(= false %) (map :rolling @dice))
-       [:ul {:class "list"}
-        (for [[i score] (map-indexed vector (game/score @dice))]
-          [:li {:key i} (score-line score)])])]]
+   [:div {:class "row scoring"}
+    (when (:scoring-enabled @state)
+      [:div {:class "col-xs-12 text-center"}
+       (when (every? #(= false %) (map :rolling @dice))
+         [:ul {:class "list"}
+          (for [[i score] (map-indexed vector (game/score @dice))]
+            [:li {:key i} (score-line score)])])])]
 
    [:div {:class "footer"}
     [:a {:href "#/about"} "?"]]])
@@ -97,16 +101,36 @@
    [:p
     [:a {:href "#/"} "back to the game"]]
    [:p [:h3 "scoring"]
+
     [:ul {:class "list"}
-     [:li (str "straight " (-> game/config :straight-score))]
+     [:li (str "straight " (-> game/config :straight-score))]]
+
+    [:ul {:class "list"}
      [:li (str "1s x " (get-in game/config [:singles 1]))]
-     [:li (str "5s x " (get-in game/config [:singles 5]))]
-     [:li (str "3 or more 1s of a kind " (get-in game/config [:3-of-a-kind 1]))]
-     [:li (str "3 or more 2s of a kind " (get-in game/config [:3-of-a-kind 2]))]
-     [:li (str "3 or more 3s of a kind " (get-in game/config [:3-of-a-kind 3]))]
-     [:li (str "3 or more 4s of a kind " (get-in game/config [:3-of-a-kind 4]))]
-     [:li (str "3 or more 5s of a kind " (get-in game/config [:3-of-a-kind 5]))]
-     [:li (str "3 or more 6s of a kind " (get-in game/config [:3-of-a-kind 6]))]]]])
+     [:li (str "5s x " (get-in game/config [:singles 5]))]]
+
+    [:ul {:class "list"}
+     [:li (str "1, 1, 1 = " (game/score-n-of-a-kind 1 3))]
+     [:li (str "2, 2, 2 = " (game/score-n-of-a-kind 2 3))]
+     [:li (str "3, 3, 3 = " (game/score-n-of-a-kind 3 3))]
+     [:li "..."]]
+
+    [:ul {:class "list"}
+     [:li (str "1, 1, 1, 1 = " (game/score-n-of-a-kind 1 4))]
+     [:li (str "2, 2, 2, 2 = " (game/score-n-of-a-kind 2 4))]
+     [:li (str "3, 3, 3, 3 = " (game/score-n-of-a-kind 3 4))]
+     [:li "..."]]
+
+    [:ul {:class "list"}
+     [:li (str "1, 1, 1, 1, 1 = " (game/score-n-of-a-kind 1 5))]
+     [:li (str "2, 2, 2, 2, 2 = " (game/score-n-of-a-kind 2 5))]
+     [:li (str "3, 3, 3, 3, 3 = " (game/score-n-of-a-kind 3 5))]
+     [:li "..."]]
+     
+    [:label "Scoring enabled? "
+     [:input {:type "checkbox"
+              :checked (:scoring-enabled @state)
+              :on-change #(swap! state update :scoring-enabled not)}]]]])
 
 (defn current-page []
   [:div [(session/get :current-page)]])
