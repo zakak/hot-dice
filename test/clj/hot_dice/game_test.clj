@@ -1,6 +1,6 @@
 (ns hot-dice.game-test
   (:require [clojure.test :refer [deftest is]]   
-            [hot-dice.game :refer [of-a-kind score singles straight] :as game]))
+            [hot-dice.game :refer [of-a-kind score score-n-of-a-kind singles straight] :as game]))
 
 (defn dice [& args]
   (map #(game/new-die :n %) args))
@@ -33,16 +33,41 @@
 
   (is (= [] (-> (dice 2 2 3 4 6) singles nums))))
 
+(deftest test-core-n-of-a-kind
+  (is (= 1000 (score-n-of-a-kind 1 3)))
+  (is (= 200  (score-n-of-a-kind 2 3)))
+  (is (= 300  (score-n-of-a-kind 3 3)))
+  (is (= 400  (score-n-of-a-kind 4 3)))
+  (is (= 500  (score-n-of-a-kind 5 3)))
+  (is (= 600  (score-n-of-a-kind 6 3)))
+
+  (is (= 2000 (score-n-of-a-kind 1 4)))
+  (is (= 400  (score-n-of-a-kind 2 4)))
+  (is (= 600  (score-n-of-a-kind 3 4)))
+  (is (= 800  (score-n-of-a-kind 4 4)))
+  (is (= 1000 (score-n-of-a-kind 5 4)))
+  (is (= 1200 (score-n-of-a-kind 6 4)))
+
+  (is (= 4000  (score-n-of-a-kind 1 5)))
+  (is (= 800   (score-n-of-a-kind 2 5)))
+  (is (= 1200  (score-n-of-a-kind 3 5)))
+  (is (= 1600  (score-n-of-a-kind 4 5)))
+  (is (= 2000  (score-n-of-a-kind 5 5)))
+  (is (= 2400  (score-n-of-a-kind 6 5))))
+
 (deftest test-score
   (is (= #{{:type :straight
             :score 1500}} (-> (dice 1 2 3 4 5) score only-scores)))
 
   (is (= #{{:type :of-a-kind
-            :score 1000}
-           {:type :single
-            :score 300}} (-> (dice 1 1 1 4 6) score only-scores)))
+            :score 1000}} (-> (dice 1 1 1 4 6) score only-scores)))
   (is (= #{{:type :of-a-kind
             :score 300}} (-> (dice 3 3 3 4 6) score only-scores)))
+
+  (is (= #{{:type :of-a-kind
+            :score 2000}
+           {:type :single
+            :score 50}} (-> (dice 1 1 1 1 5) score only-scores)))
 
   (is (= #{{:type :single
             :score 200}

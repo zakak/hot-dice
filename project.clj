@@ -17,6 +17,7 @@
                  [environ "1.0.0"]
                  [org.clojure/clojurescript "1.7.122" :scope "provided"]
                  [org.clojure/core.async "0.1.267.0-0d7780-alpha"]
+                 [org.clojure/core.match "0.3.0-alpha4"]
                  [secretary "1.2.3"]]
 
   :plugins [[lein-environ "1.0.0"]
