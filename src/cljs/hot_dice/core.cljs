@@ -25,6 +25,7 @@
                       :mode :start}))
 
 (defonce dice (atom (game/init-dice)))
+(defonce tally (atom []))
 
 ;; -------------------------
 ;; Fn
@@ -36,6 +37,9 @@
   (let [t-min (+ (:spin-timeout config) 50)
         t-max (- (:spin-timeout config) 50)]
     (timeout (game/rand-between t-min t-max))))
+
+(defn reset-dice! []
+  (reset! dice (game/init-dice)))
 
 (defn roll-die! [k {:keys [min max] :as die}]
     (swap! dice assoc-in [k :rolling] true)
@@ -71,6 +75,28 @@
              :src (str "image/die" (:n die) ".svg")
              :on-click #(toggle-hold-die! k die)}]])])
 
+(defn tally-view []
+  [:div (pr-str @tally)])
+
+(defn total-view [scores]
+  (when (seq scores)
+    (let [total (reduce + (map :score scores))]
+      [:button {:class "btn btn-default"
+                :on-click #(swap! tally conj total)}
+       (str "Keep " total)])))
+
+(defn scoring-view []
+  [:div {:class "row scoring"}
+   (when (:scoring-enabled @state)
+     [:div {:class "col-xs-12 text-center"}
+      (when (every? #(= false %) (map :rolling @dice))
+        (let [scores (game/score @dice)]
+          [:div
+           [:ul {:class "list"}
+            (for [[i score] (map-indexed vector scores)]
+              [:li {:key i} (score-line score)])]
+           [total-view scores]]))])])
+
 (defn home-page []
   [:div
    [:div {:class "row"}
@@ -80,18 +106,11 @@
    [:div {:class "row"}
     [:div {:class "col-xs-12 text-center"}
      [:button {:class "btn btn-default fa fa-2x fa-refresh"
-               :on-click #(reset! dice (game/init-dice))}]
+               :on-click #(reset-dice!)}]
      " "
      [:button {:class "btn btn-primary fa fa-2x fa-random"
                :on-click #(roll-all!)}]]]
-
-   [:div {:class "row scoring"}
-    (when (:scoring-enabled @state)
-      [:div {:class "col-xs-12 text-center"}
-       (when (every? #(= false %) (map :rolling @dice))
-         [:ul {:class "list"}
-          (for [[i score] (map-indexed vector (game/score @dice))]
-            [:li {:key i} (score-line score)])])])]
+   [scoring-view]
 
    [:div {:class "footer"}
     [:a {:href "#/about"} "?"]]])
