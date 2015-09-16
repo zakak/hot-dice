@@ -95,7 +95,10 @@
           :else [])
         (set))))
 
-(defn score [dice]
+(defn hot-dice-scores? [scores]
+  (>= (-> (mapcat :dice scores) count) (:dice-count config)))
+
+(defn scores [dice]
   (if-let [coll (seq (straight dice))]
     #{{:type :straight
        :score (:straight-score config)

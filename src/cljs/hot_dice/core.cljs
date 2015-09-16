@@ -38,12 +38,12 @@
     (timeout (game/rand-between t-min t-max))))
 
 (defn roll-die! [k {:keys [min max] :as die}]
-    (swap! dice assoc-in [k :rolling] true)
+    (swap! dice assoc-in [k :rolling?] true)
     (go
       (dotimes [n (:spin-count config)]
         (swap! dice assoc-in [k :n] (game/rand-between min max))
         (<! (rand-timeout)))
-      (swap! dice assoc-in [k :rolling] false)))
+      (swap! dice assoc-in [k :rolling?] false)))
 
 (defn roll-all! []
   (doseq [[k die] (map-indexed vector @dice)]
@@ -71,27 +71,50 @@
              :src (str "image/die" (:n die) ".svg")
              :on-click #(toggle-hold-die! k die)}]])])
 
+(defn not-rolling? [dice]
+  (every? #(= false %) (map :rolling? dice)))
+
+(defn scoring-view []
+  (let [scores (game/scores @dice)]
+    [:div {:class "row scoring"}
+     [:div {:class "col-xs-12 text-center"}
+      [:ul {:class "list"}
+       (for [[i score] (map-indexed vector scores)]
+         [:li {:key i} (score-line score)])]
+      (when (game/hot-dice-scores? scores)
+        [:button {:class "btn btn-danger fa fa-2x fa-fire"}])]]))
+
+(defmulti controls-view #(:scoring-enabled @state))
+
+(defmethod controls-view true []
+  [:div
+   [:div {:class "row"}
+    [:div {:class "col-xs-12 text-center"}
+     [:button {:class "btn btn-default fa fa-2x fa-refresh"
+               :on-click #(reset! dice (game/init-dice))}]
+     " "
+     [:button {:class "btn btn-default fa fa-2x fa-random"
+               :on-click #(roll-all!)}]]]
+   (when (not-rolling? @dice)
+     [scoring-view])])
+
+(defmethod controls-view :default []
+  [:div {:class "row"}
+   [:div {:class "col-xs-12 text-center"}
+    [:button {:class "btn btn-default fa fa-2x fa-refresh"
+              :on-click #(reset! dice (game/init-dice))}]
+    " "
+    [:button {:class "btn btn-default fa fa-2x fa-random"
+              :on-click #(roll-all!)}]]])
+
 (defn home-page []
   [:div
    [:div {:class "row"}
     [:div {:class "col-xs-12 text-center"}
      [dice-view]]]
 
-   [:div {:class "row"}
-    [:div {:class "col-xs-12 text-center"}
-     [:button {:class "btn btn-default fa fa-2x fa-refresh"
-               :on-click #(reset! dice (game/init-dice))}]
-     " "
-     [:button {:class "btn btn-primary fa fa-2x fa-random"
-               :on-click #(roll-all!)}]]]
-
-   [:div {:class "row scoring"}
-    (when (:scoring-enabled @state)
-      [:div {:class "col-xs-12 text-center"}
-       (when (every? #(= false %) (map :rolling @dice))
-         [:ul {:class "list"}
-          (for [[i score] (map-indexed vector (game/score @dice))]
-            [:li {:key i} (score-line score)])])])]
+   [:div {:class "controls"}
+    [controls-view]]
 
    [:div {:class "footer"}
     [:a {:href "#/about"} "?"]]])
