@@ -1,6 +1,6 @@
-An implementation of hot dice.
+An implementation of Hot Dice (a variation of [Farkle](https://en.wikipedia.org/wiki/Farkle)).
 
-Start developing with [reagent](https://github.com/reagent-project/reagent) and [figwheel](https://github.com/bhauman/lein-figwheel):
+Start developing with [Reagent](https://github.com/reagent-project/reagent) and [Figwheel](https://github.com/bhauman/lein-figwheel):
 
     lein figwheel
 
