@@ -16,8 +16,7 @@
   (is (= [6 5 4 3 2] (-> (->dice 6 5 4 3 2) straight nums)))
   
   (is (= [] (-> (->dice 1 1 1 1 1) straight nums)))
-  (is (= [] (-> (->dice 1 2 3 4 6) straight nums)))
-  (is (= [] (-> (->dice 1 2 3 4) straight nums))))
+  (is (= [] (-> (->dice 1 2 3 4 6) straight nums))))
 
 (deftest test-of-a-kind
   (is (= [1 1 1] (-> (->dice 1 1 1 5 5) of-a-kind nums)))

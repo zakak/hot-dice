@@ -28,17 +28,17 @@
    (into [] (for [n (range n)]
               (new-die :key n)))))
 
+(defn straight-nums? [nums]
+  (every? (fn [[current next]]
+            (= (inc current) next))
+          (partition 2 1 (sort nums))))
+
 (defn straight
   ([dice] (straight dice (:straight-min config)))
   ([dice min-count]
-   (let [nums (set (map :n dice))
-         min (apply min nums)
-         max (apply max nums)
-         range (set (range min (inc max)))]
-     (if (and (>= (count range) min-count)
-                (= range nums))
-       dice
-       []))))
+   (if (straight-nums? (map :n dice))
+     dice
+     [])))
 
 (defn of-a-kind
   ([dice] (of-a-kind dice (:of-a-kind-min config)))
