@@ -1,6 +1,6 @@
 (defproject hot-dice "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "Hot Dice"
+  :url "https://github.com/zakak/hot-dice"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
